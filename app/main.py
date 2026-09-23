@@ -1,9 +1,14 @@
 from typing import Optional
-from fastapi import FastAPI, status, Response, HTTPException
+from fastapi import FastAPI, status, Response, HTTPException, Depends
 from pydantic import BaseModel
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
+from . import models
+from .database import Base, engine, get_db
+from sqlalchemy.orm import Session
+
+Base.metadata.create_all(bind=engine)
 
 class Post(BaseModel):
     title: str
@@ -20,13 +25,16 @@ while True:
         print("Database Connection was successful")
         break
     except Exception as error:
+        time.sleep(3)
         print(f"Connection failed with error: {error}")
 
 @app.get("/")
 async def read_root():
     return {"Hello": "World"}
 
-my_posts = [{"id" : 1, "title" : "Backend Frameworks", "content" : "My favorite backend framework is FastAPI"}]
+@app.get("/sqlalchemy")
+def trial_posts(db: Session = Depends(get_db)):
+    return db.query(models.Post).all()
 
 @app.get("/posts")
 def read_posts():
