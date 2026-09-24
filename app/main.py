@@ -1,7 +1,8 @@
-from fastapi import FastAPI, status, Response, HTTPException, Depends
+from fastapi import FastAPI, status, HTTPException, Depends
 from . import models, schemas
 from .database import Base, engine, get_db
 from sqlalchemy.orm import Session
+from typing import List
 
 Base.metadata.create_all(bind=engine)
 
@@ -66,6 +67,20 @@ def update_post(id: int, post: schemas.Post, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(temp_post)
     return temp_post
+
+
+@app.post("/users", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
+def add_user(post: schemas.UserCreate, db: Session = Depends(get_db)):
+    temp_user = models.User(**post.model_dump())
+    db.add(temp_user)
+    db.commit()
+    db.refresh(temp_user)
+    return temp_user
+
+@app.get("/users", response_model=List[schemas.UserResponse])
+def read_posts(db: Session = Depends(get_db)):
+    return db.query(models.User).all()
+
 
 
 
