@@ -15,6 +15,16 @@ class Post(BaseModel):
 class PostReturn(Post):
     id: int
     created_by: BaseUser = Field(validation_alias="owner")
+
+class PostOut(BaseModel):
+    Post : PostReturn
+    votes : int
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True
+    )
+
 class UserCreate(BaseUser):
     password: str
 
@@ -38,3 +48,7 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: Optional['int'] = None
+
+class MakePost(BaseModel):
+    post_id: int
+    direction: int

@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import Depends, HTTPException, status, APIRouter
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from .. import models, schemas, oauth2
 from ..database import get_db
@@ -9,9 +10,14 @@ router = APIRouter(
     tags=['Posts']
 )
 
-@router.get("/", response_model=List[schemas.PostReturn])
+@router.get("/", response_model=List[schemas.PostOut])
 def read_posts(db: Session = Depends(get_db), limit:int = 10, offset:int = 0):
-    return db.query(models.Post).limit(limit).offset(offset).all()
+    #return db.query(models.Post).limit(limit).offset(offset).all()
+
+    temp_query = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).limit(limit).offset(offset)
+    posts = temp_query.all()
+
+    return posts
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.PostReturn)
 def add_post(post: schemas.Post, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
