@@ -28,14 +28,18 @@ def add_post(post: schemas.Post, db: Session = Depends(get_db), current_user: in
     db.refresh(temp_post)
     return temp_post
 
-@router.get("/{id}", status_code=status.HTTP_200_OK)
+@router.get("/{id}", status_code=status.HTTP_200_OK, response_model=schemas.PostOut)
 def get_post(id: int, db: Session = Depends(get_db)):
-    post = db.query(models.Post).filter(models.Post.id == id).first()
+    #post = db.query(models.Post).filter(models.Post.id == id).first()
+    temp_query = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.id == id)
+    post = temp_query.first()
+    
     if post is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, 
             detail="Requested post not found"
         )
+    
     return post
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
