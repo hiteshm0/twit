@@ -2,15 +2,19 @@ from pydantic import BaseModel, EmailStr, ConfigDict, Field
 from datetime import datetime
 from typing import Optional
 
-class Post(BaseModel):
-    title: str
-    content: str
-    published: bool = True
 
 class BaseUser(BaseModel):
     username: str
     email: EmailStr
 
+class Post(BaseModel):
+    title: str
+    content: str
+    published: bool = True
+
+class PostReturn(Post):
+    id: int
+    created_by: BaseUser = Field(validation_alias="owner")
 class UserCreate(BaseUser):
     password: str
 
@@ -28,9 +32,9 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
-class TokenReturn(BaseModel):
-    token: str
-    bearer: str
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
 class TokenData(BaseModel):
-    id: Optional['str'] = None
+    id: Optional['int'] = None
