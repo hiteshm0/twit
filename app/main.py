@@ -3,7 +3,7 @@ from .database import Base, engine
 from .routers import post, user, vote
 from . import auth, oauth2
 
-Base.metadata.create_all(bind=engine)
+#Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
